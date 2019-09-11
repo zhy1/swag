@@ -1,7 +1,9 @@
 package gen
 
 import (
+	"github.com/go-openapi/spec"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"testing"
@@ -164,6 +166,7 @@ func TestGen_FailToWrite(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 }
 
 func TestGen_configWithOutputDir(t *testing.T) {
@@ -189,4 +192,79 @@ func TestGen_configWithOutputDir(t *testing.T) {
 	}
 
 	//TODO: remove gen files
+}
+
+func TestGen_formatSource(t *testing.T) {
+	src := `package main
+
+import "net
+
+func main() {}
+`
+	g := New()
+
+	res := g.formatSource([]byte(src))
+	assert.Equal(t, []byte(src), res, "Should return same content due to fmt fail")
+
+	src2 := `package main
+
+import "fmt"
+
+func main() {
+fmt.Print("Helo world")
+}
+`
+	res = g.formatSource([]byte(src2))
+	assert.NotEqual(t, []byte(src2), res, "Should return fmt code")
+}
+
+type mocWriter struct{}
+
+func (w *mocWriter) Write(data []byte) (int, error) {
+	return len(data), nil
+}
+
+func TestGen_writeGoDoc(t *testing.T) {
+	gen := New()
+
+	swapTemplate := packageTemplate
+
+	packageTemplate = `{{{`
+	err := gen.writeGoDoc(nil, nil)
+	assert.Error(t, err)
+
+	packageTemplate = `{{.Data}}`
+	swagger := &spec.Swagger{
+		VendorExtensible: spec.VendorExtensible{},
+		SwaggerProps: spec.SwaggerProps{
+			Info: &spec.Info{},
+		},
+	}
+	err = gen.writeGoDoc(&mocWriter{}, swagger)
+	assert.Error(t, err)
+
+	packageTemplate = swapTemplate
+
+}
+
+func TestGen_GeneratedDoc(t *testing.T) {
+
+	searchDir := "../testdata/simple"
+
+	config := &Config{
+		SearchDir:          searchDir,
+		MainAPIFile:        "./main.go",
+		OutputDir:          "../testdata/simple/docs",
+		PropNamingStrategy: "",
+	}
+
+	assert.NoError(t, New().Build(config))
+	gocmd, err := exec.LookPath("go")
+	assert.NoError(t, err)
+
+	cmd := exec.Command(gocmd, "build", filepath.Join(config.OutputDir, "docs.go"))
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	assert.NoError(t, cmd.Run())
 }

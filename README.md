@@ -316,7 +316,7 @@ $ swag init
 | tag.name    | Name of a tag.| // @tag.name This is the name of the tag                     |
 | tag.description   | Description of the tag  | // @tag.description Cool Description         |
 | tag.docs.url      | Url of the external Documentation of the tag | // @tag.docs.url https://example.com|
-| tag.docs.descripiton  | Description of the external Documentation of the tag| // @tag.docs.descirption Best example documentation |
+| tag.docs.description  | Description of the external Documentation of the tag| // @tag.docs.description Best example documentation |
 | termsOfService | The Terms of Service for the API.| // @termsOfService http://swagger.io/terms/                     |
 | contact.name | The contact information for the exposed API.| // @contact.name API Support  |
 | contact.url  | The URL pointing to the contact information. MUST be in the format of a URL.  | // @contact.url http://www.swagger.io/support|
@@ -348,20 +348,21 @@ When a short string in your documentation is insufficient, or you need images, c
 [celler/controller](https://github.com/swaggo/swag/tree/master/example/celler/controller)
 
 
-| annotation         | description                                                                                                                |
-|--------------------|----------------------------------------------------------------------------------------------------------------------------|
-| description        | A verbose explanation of the operation behavior.                                                                           |
-| id                 | A unique string used to identify the operation. Must be unique among all API operations.                                   |
-| tags               | A list of tags to each API operation that separated by commas.                                                             |
-| summary            | A short summary of what the operation does.                                                                                |
-| accept             | A list of MIME types the APIs can consume. Value MUST be as described under [Mime Types](#mime-types).                     |
-| produce            | A list of MIME types the APIs can produce. Value MUST be as described under [Mime Types](#mime-types).                     |
-| param              | Parameters that separated by spaces. `param name`,`param type`,`data type`,`is mandatory?`,`comment` `attribute(optional)` |
-| security           | [Security](#security) to each API operation.                                                                               |
-| success            | Success response that separated by spaces. `return code`,`{param type}`,`data type`,`comment`                              |
-| failure            | Failure response that separated by spaces. `return code`,`{param type}`,`data type`,`comment`                              |
-| header             | Header in response that separated by spaces. `return code`,`{param type}`,`data type`,`comment`                              |
-| router             | Path definition that separated by spaces. `path`,`[httpMethod]`                                                           |
+| annotation  | description                                                                                                                |
+|-------------|----------------------------------------------------------------------------------------------------------------------------|
+| description | A verbose explanation of the operation behavior.                                                                           |
+| id          | A unique string used to identify the operation. Must be unique among all API operations.                                   |
+| tags        | A list of tags to each API operation that separated by commas.                                                             |
+| summary     | A short summary of what the operation does.                                                                                |
+| accept      | A list of MIME types the APIs can consume. Value MUST be as described under [Mime Types](#mime-types).                     |
+| produce     | A list of MIME types the APIs can produce. Value MUST be as described under [Mime Types](#mime-types).                     |
+| param       | Parameters that separated by spaces. `param name`,`param type`,`data type`,`is mandatory?`,`comment` `attribute(optional)` |
+| security    | [Security](#security) to each API operation.                                                                               |
+| success     | Success response that separated by spaces. `return code`,`{param type}`,`data type`,`comment`                              |
+| failure     | Failure response that separated by spaces. `return code`,`{param type}`,`data type`,`comment`                              |
+| header      | Header in response that separated by spaces. `return code`,`{param type}`,`data type`,`comment`                            |
+| router      | Path definition that separated by spaces. `path`,`[httpMethod]`                                                            |
+| x-name      | The extension key, must be start by x- and take only json value.                                                           |
 
 ## Mime Types
 
@@ -564,6 +565,33 @@ type Account struct {
     // Array types can be overridden using "array,<prim_type>" format
     Coeffs []big.Float `json:"coeffs" swaggertype:"array,number"`
 }
+```
+
+[#379](https://github.com/swaggo/swag/issues/379)
+```go
+type CerticateKeyPair struct {
+	Crt []byte `json:"crt" swaggertype:"string" format:"base64" example:"U3dhZ2dlciByb2Nrcw=="`
+	Key []byte `json:"key" swaggertype:"string" format:"base64" example:"U3dhZ2dlciByb2Nrcw=="`
+}
+```
+generated swagger doc as follows:
+```go
+"api.MyBinding": {
+  "type":"object",
+  "properties":{
+    "crt":{
+      "type":"string",
+      "format":"base64",
+      "example":"U3dhZ2dlciByb2Nrcw=="
+    },
+    "key":{
+      "type":"string",
+      "format":"base64",
+      "example":"U3dhZ2dlciByb2Nrcw=="
+    }
+  }
+}
+
 ```
 
 ### Add extension info to struct field

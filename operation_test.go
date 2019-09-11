@@ -3,6 +3,8 @@ package swag
 import (
 	"encoding/json"
 	"go/ast"
+	goparser "go/parser"
+	"go/token"
 	"testing"
 
 	"github.com/go-openapi/spec"
@@ -138,7 +140,6 @@ func TestParseResponseCommentWithObjectType(t *testing.T) {
 
 	response := operation.Responses.StatusCodeResponses[200]
 	assert.Equal(t, `Error message, if code != 200`, response.Description)
-	assert.Equal(t, spec.StringOrArray{"object"}, response.Schema.Type)
 
 	b, _ := json.MarshalIndent(operation, "", "    ")
 
@@ -147,7 +148,6 @@ func TestParseResponseCommentWithObjectType(t *testing.T) {
         "200": {
             "description": "Error message, if code != 200",
             "schema": {
-                "type": "object",
                 "$ref": "#/definitions/model.OrderRow"
             }
         }
@@ -265,6 +265,11 @@ func TestParseResponseCommentWithHeader(t *testing.T) {
     }
 }`
 	assert.Equal(t, expected, string(b))
+
+	comment = `@Header 200 "Mallformed"`
+	err = operation.ParseComment(comment, nil)
+	assert.Error(t, err, "ParseComment should not fail")
+
 }
 
 func TestParseEmptyResponseOnlyCode(t *testing.T) {
@@ -306,6 +311,58 @@ func TestParseParamCommentByPathType(t *testing.T) {
             "description": "Some ID",
             "name": "some_id",
             "in": "path",
+            "required": true
+        }
+    ]
+}`
+	assert.Equal(t, expected, string(b))
+}
+
+// Test ParseParamComment Query Params
+func TestParseParamCommentBodyArray(t *testing.T) {
+	comment := `@Param names body []string true "Users List"`
+	operation := NewOperation()
+	err := operation.ParseComment(comment, nil)
+
+	assert.NoError(t, err)
+	b, _ := json.MarshalIndent(operation, "", "    ")
+	expected := `{
+    "parameters": [
+        {
+            "description": "Users List",
+            "name": "names",
+            "in": "body",
+            "required": true,
+            "schema": {
+                "type": "string",
+                "items": {
+                    "type": "string"
+                }
+            }
+        }
+    ]
+}`
+	assert.Equal(t, expected, string(b))
+}
+
+// Test ParseParamComment Query Params
+func TestParseParamCommentQueryArray(t *testing.T) {
+	comment := `@Param names query []string true "Users List"`
+	operation := NewOperation()
+	err := operation.ParseComment(comment, nil)
+
+	assert.NoError(t, err)
+	b, _ := json.MarshalIndent(operation, "", "    ")
+	expected := `{
+    "parameters": [
+        {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "Users List",
+            "name": "names",
+            "in": "query",
             "required": true
         }
     ]
@@ -552,6 +609,20 @@ func TestParseParamCommentByEnums(t *testing.T) {
     ]
 }`
 	assert.Equal(t, expected, string(b))
+
+	operation = NewOperation()
+
+	comment = `@Param some_id query int true "Some ID" Enums(A, B, C)`
+	assert.Error(t, operation.ParseComment(comment, nil))
+
+	comment = `@Param some_id query number true "Some ID" Enums(A, B, C)`
+	assert.Error(t, operation.ParseComment(comment, nil))
+
+	comment = `@Param some_id query boolean true "Some ID" Enums(A, B, C)`
+	assert.Error(t, operation.ParseComment(comment, nil))
+
+	comment = `@Param some_id query Document true "Some ID" Enums(A, B, C)`
+	assert.Error(t, operation.ParseComment(comment, nil))
 }
 
 func TestParseParamCommentByMaxLength(t *testing.T) {
@@ -574,6 +645,12 @@ func TestParseParamCommentByMaxLength(t *testing.T) {
     ]
 }`
 	assert.Equal(t, expected, string(b))
+
+	comment = `@Param some_id query int true "Some ID" MaxLength(10)`
+	assert.Error(t, operation.ParseComment(comment, nil))
+
+	comment = `@Param some_id query string true "Some ID" MaxLength(Goopher)`
+	assert.Error(t, operation.ParseComment(comment, nil))
 }
 
 func TestParseParamCommentByMinLength(t *testing.T) {
@@ -596,6 +673,12 @@ func TestParseParamCommentByMinLength(t *testing.T) {
     ]
 }`
 	assert.Equal(t, expected, string(b))
+
+	comment = `@Param some_id query int true "Some ID" MinLength(10)`
+	assert.Error(t, operation.ParseComment(comment, nil))
+
+	comment = `@Param some_id query string true "Some ID" MinLength(Goopher)`
+	assert.Error(t, operation.ParseComment(comment, nil))
 }
 
 func TestParseParamCommentByMininum(t *testing.T) {
@@ -618,6 +701,12 @@ func TestParseParamCommentByMininum(t *testing.T) {
     ]
 }`
 	assert.Equal(t, expected, string(b))
+
+	comment = `@Param some_id query string true "Some ID" Mininum(10)`
+	assert.Error(t, operation.ParseComment(comment, nil))
+
+	comment = `@Param some_id query integer true "Some ID" Mininum(Goopher)`
+	assert.Error(t, operation.ParseComment(comment, nil))
 }
 
 func TestParseParamCommentByMaxinum(t *testing.T) {
@@ -640,6 +729,13 @@ func TestParseParamCommentByMaxinum(t *testing.T) {
     ]
 }`
 	assert.Equal(t, expected, string(b))
+
+	comment = `@Param some_id query string true "Some ID" Maxinum(10)`
+	assert.Error(t, operation.ParseComment(comment, nil))
+
+	comment = `@Param some_id query integer true "Some ID" Maxinum(Goopher)`
+	assert.Error(t, operation.ParseComment(comment, nil))
+
 }
 
 func TestParseParamCommentByDefault(t *testing.T) {
@@ -734,6 +830,19 @@ func TestParseMultiDescription(t *testing.T) {
 	assert.Contains(t, string(b), expected)
 }
 
+func TestParseSummary(t *testing.T) {
+	comment := `@summary line one`
+	operation := NewOperation()
+	operation.parser = New()
+
+	err := operation.ParseComment(comment, nil)
+	assert.NoError(t, err)
+
+	comment = `@Summary line one`
+	err = operation.ParseComment(comment, nil)
+	assert.NoError(t, err)
+}
+
 func TestParseDeprecationDescription(t *testing.T) {
 	comment := `@Deprecated`
 	operation := NewOperation()
@@ -744,5 +853,63 @@ func TestParseDeprecationDescription(t *testing.T) {
 
 	if !operation.Deprecated {
 		t.Error("Failed to parse @deprecated comment")
+	}
+}
+
+func TestRegisterSchemaType(t *testing.T) {
+	operation := NewOperation()
+	assert.NoError(t, operation.registerSchemaType("string", nil))
+
+	fset := token.NewFileSet()
+	astFile, err := goparser.ParseFile(fset, "main.go", `package main
+	import "timer"
+`, goparser.ParseComments)
+
+	assert.NoError(t, err)
+
+	operation.parser = New()
+	assert.Error(t, operation.registerSchemaType("timer.Location", astFile))
+}
+
+func TestParseExtentions(t *testing.T) {
+	// Fail if there are no args for attributes.
+	{
+		comment := `@x-amazon-apigateway-integration`
+		operation := NewOperation()
+		operation.parser = New()
+
+		err := operation.ParseComment(comment, nil)
+		assert.EqualError(t, err, "annotation @x-amazon-apigateway-integration need a value")
+	}
+
+	// Fail if args of attributes are broken.
+	{
+		comment := `@x-amazon-apigateway-integration ["broken"}]`
+		operation := NewOperation()
+		operation.parser = New()
+
+		err := operation.ParseComment(comment, nil)
+		assert.EqualError(t, err, "annotation @x-amazon-apigateway-integration need a valid json value")
+	}
+
+	// OK
+	{
+		comment := `@x-amazon-apigateway-integration {"uri": "${some_arn}", "passthroughBehavior": "when_no_match", "httpMethod": "POST", "type": "aws_proxy"}`
+		operation := NewOperation()
+		operation.parser = New()
+
+		err := operation.ParseComment(comment, nil)
+		assert.NoError(t, err)
+
+		expected := `{
+    "x-amazon-apigateway-integration": {
+        "httpMethod": "POST",
+        "passthroughBehavior": "when_no_match",
+        "type": "aws_proxy",
+        "uri": "${some_arn}"
+    }
+}`
+		b, _ := json.MarshalIndent(operation, "", "    ")
+		assert.Equal(t, expected, string(b))
 	}
 }

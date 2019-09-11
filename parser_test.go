@@ -112,8 +112,6 @@ func TestParser_ParseGeneralApiInfoTemplated(t *testing.T) {
 	expected := `{
     "swagger": "2.0",
     "info": {
-        "description": "{{.Description}}",
-        "title": "{{.Title}}",
         "termsOfService": "http://swagger.io/terms/",
         "contact": {
             "name": "API Support",
@@ -123,11 +121,8 @@ func TestParser_ParseGeneralApiInfoTemplated(t *testing.T) {
         "license": {
             "name": "Apache 2.0",
             "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
-        },
-        "version": "{{.Version}}"
+        }
     },
-    "host": "{{.Host}}",
-    "basePath": "{{.BasePath}}",
     "paths": {},
     "securityDefinitions": {
         "ApiKeyAuth": {
@@ -197,7 +192,7 @@ func TestParser_ParseGeneralApiInfoTemplated(t *testing.T) {
 func TestParser_ParseGeneralApiInfoExtensions(t *testing.T) {
 	// should be return an error because extension value is not a valid json
 	func() {
-		expected := "@x-google-endpoints need a valid json value"
+		expected := "annotation @x-google-endpoints need a valid json value"
 		gopath := os.Getenv("GOPATH")
 		assert.NotNil(t, gopath)
 		p := New()
@@ -209,7 +204,7 @@ func TestParser_ParseGeneralApiInfoExtensions(t *testing.T) {
 
 	// should be return an error because extension don't have a value
 	func() {
-		expected := "@x-google-endpoints need a value"
+		expected := "annotation @x-google-endpoints need a value"
 		gopath := os.Getenv("GOPATH")
 		assert.NotNil(t, gopath)
 		p := New()
@@ -231,8 +226,6 @@ func TestParser_ParseGeneralApiInfoWithOpsInSameFile(t *testing.T) {
         "license": {},
         "version": "1.0"
     },
-    "host": "{{.Host}}",
-    "basePath": "{{.BasePath}}",
     "paths": {}
 }`
 
@@ -338,7 +331,6 @@ func TestParseSimpleApi1(t *testing.T) {
                     "400": {
                         "description": "We need ID!!",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/web.APIError"
                         }
                     },
@@ -354,7 +346,6 @@ func TestParseSimpleApi1(t *testing.T) {
                     "404": {
                         "description": "Can not find ID",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/web.APIError"
                         }
                     }
@@ -402,14 +393,12 @@ func TestParseSimpleApi1(t *testing.T) {
                     "400": {
                         "description": "We need ID!!",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/web.APIError"
                         }
                     },
                     "404": {
                         "description": "Can not find ID",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/web.APIError"
                         }
                     }
@@ -514,14 +503,12 @@ func TestParseSimpleApi1(t *testing.T) {
                     "400": {
                         "description": "We need ID!!",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/web.APIError"
                         }
                     },
                     "404": {
                         "description": "Can not find ID",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/web.APIError"
                         }
                     }
@@ -980,14 +967,12 @@ func TestParseSimpleApi_ForSnakecase(t *testing.T) {
                     "400": {
                         "description": "We need ID!!",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/web.APIError"
                         }
                     },
                     "404": {
                         "description": "Can not find ID",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/web.APIError"
                         }
                     }
@@ -1035,14 +1020,12 @@ func TestParseSimpleApi_ForSnakecase(t *testing.T) {
                     "400": {
                         "description": "We need ID!!",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/web.APIError"
                         }
                     },
                     "404": {
                         "description": "Can not find ID",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/web.APIError"
                         }
                     }
@@ -1147,14 +1130,12 @@ func TestParseSimpleApi_ForSnakecase(t *testing.T) {
                     "400": {
                         "description": "We need ID!!",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/web.APIError"
                         }
                     },
                     "404": {
                         "description": "Can not find ID",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/web.APIError"
                         }
                     }
@@ -1470,14 +1451,12 @@ func TestParseSimpleApi_ForLowerCamelcase(t *testing.T) {
                     "400": {
                         "description": "We need ID!!",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/web.APIError"
                         }
                     },
                     "404": {
                         "description": "Can not find ID",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/web.APIError"
                         }
                     }
@@ -1525,14 +1504,12 @@ func TestParseSimpleApi_ForLowerCamelcase(t *testing.T) {
                     "400": {
                         "description": "We need ID!!",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/web.APIError"
                         }
                     },
                     "404": {
                         "description": "Can not find ID",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/web.APIError"
                         }
                     }
@@ -1637,14 +1614,12 @@ func TestParseSimpleApi_ForLowerCamelcase(t *testing.T) {
                     "400": {
                         "description": "We need ID!!",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/web.APIError"
                         }
                     },
                     "404": {
                         "description": "Can not find ID",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/web.APIError"
                         }
                     }
@@ -1924,14 +1899,12 @@ func TestParseStructComment(t *testing.T) {
                     "400": {
                         "description": "We need ID!!",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/web.APIError"
                         }
                     },
                     "404": {
                         "description": "Can not find ID",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/web.APIError"
                         }
                     }
@@ -1952,11 +1925,11 @@ func TestParseStructComment(t *testing.T) {
                     "type": "string"
                 },
                 "errorCtx": {
-                    "description": "Error context tick comment",
+                    "description": "Error ` + "`" + `context` + "`" + ` tick comment",
                     "type": "string"
                 },
                 "errorNo": {
-                    "description": "Error number tick comment",
+                    "description": "Error ` + "`" + `number` + "`" + ` tick comment",
                     "type": "integer"
                 }
             }
@@ -2112,7 +2085,6 @@ func TestParseModelNotUnderRoot(t *testing.T) {
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/data.Foo"
                         }
                     }
@@ -2223,7 +2195,6 @@ func TestParseModelAsTypeAlias(t *testing.T) {
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/data.TimeContainer"
                         }
                     }
@@ -2270,6 +2241,134 @@ func TestParseComposition(t *testing.T) {
 
 	b, _ := json.MarshalIndent(p.swagger, "", "    ")
 	assert.Equal(t, string(expected), string(b))
+}
+
+func TestParser_ParseStuctArrayObject(t *testing.T) {
+	src := `
+package api
+
+type Response struct {
+	Code int
+	Data []struct{
+		Field1 uint 
+		Field2 string 
+	} 
+}
+
+// @Success 200 {object} Response
+// @Router /api/{id} [get]
+func Test(){
+}
+`
+	expected := `{
+   "api.Response": {
+      "type": "object",
+      "properties": {
+         "code": {
+            "type": "integer"
+         },
+         "data": {
+            "type": "array",
+            "items": {
+               "type": "object",
+               "properties": {
+                  "field1": {
+                     "type": "integer"
+                  },
+                  "field2": {
+                     "type": "string"
+                  }
+               }
+            }
+         }
+      }
+   }
+}`
+	f, err := goparser.ParseFile(token.NewFileSet(), "", src, goparser.ParseComments)
+	assert.NoError(t, err)
+
+	p := New()
+	p.ParseType(f)
+	err = p.ParseRouterAPIInfo("", f)
+	assert.NoError(t, err)
+
+	typeSpec := p.TypeDefinitions["api"]["Response"]
+	err = p.ParseDefinition("api", typeSpec.Name.Name, typeSpec)
+	assert.NoError(t, err)
+
+	out, err := json.MarshalIndent(p.swagger.Definitions, "", "   ")
+	assert.NoError(t, err)
+	assert.Equal(t, expected, string(out))
+
+}
+
+func TestParser_ParseEmbededStruct(t *testing.T) {
+	src := `
+package api
+
+type Response struct {
+	rest.ResponseWrapper
+}
+
+// @Success 200 {object} Response
+// @Router /api/{id} [get]
+func Test(){
+}
+`
+	restsrc := `
+package rest
+
+type ResponseWrapper struct {
+	Status   string      
+	Code     int
+	Messages []string
+	Result   interface{}
+}
+`
+	expected := `{
+   "api.Response": {
+      "type": "object",
+      "properties": {
+         "code": {
+            "type": "integer"
+         },
+         "messages": {
+            "type": "array",
+            "items": {
+               "type": "string"
+            }
+         },
+         "result": {
+            "type": "object"
+         },
+         "status": {
+            "type": "string"
+         }
+      }
+   }
+}`
+	parser := New()
+	parser.ParseDependency = true
+
+	f, err := goparser.ParseFile(token.NewFileSet(), "", src, goparser.ParseComments)
+	assert.NoError(t, err)
+	parser.ParseType(f)
+
+	f2, err := goparser.ParseFile(token.NewFileSet(), "", restsrc, goparser.ParseComments)
+	assert.NoError(t, err)
+	parser.ParseType(f2)
+
+	err = parser.ParseRouterAPIInfo("", f)
+	assert.NoError(t, err)
+
+	typeSpec := parser.TypeDefinitions["api"]["Response"]
+	err = parser.ParseDefinition("api", typeSpec.Name.Name, typeSpec)
+	assert.NoError(t, err)
+
+	out, err := json.MarshalIndent(parser.swagger.Definitions, "", "   ")
+	assert.NoError(t, err)
+	assert.Equal(t, expected, string(out))
+
 }
 
 func TestParser_ParseRouterApiInfoErr(t *testing.T) {
